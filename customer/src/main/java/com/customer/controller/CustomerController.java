@@ -1,15 +1,24 @@
 package com.customer.controller;
 
 import com.customer.dto.CreateCustomerRequest;
+import com.customer.dto.CustomerResponse;
 import com.customer.dto.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,7 +42,7 @@ public class CustomerController {
     // Get customer by ID
     // ----------------------------
     @GetMapping("/getCustomerById/{id}")
-    public ResponseEntity<Customer> getById(@PathVariable UUID id) {
+    public ResponseEntity<CustomerResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(customerService.getById(id));
     }
 
@@ -75,8 +84,20 @@ public class CustomerController {
     // Delete customer
     // ----------------------------
     @DeleteMapping("/deleteCustomerById/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteCustomer(@PathVariable UUID id) {
+        boolean exists = customerService.exists(id);
+        if (!exists) {
+            return ResponseEntity.status(404).body(Map.of(
+                    "status", 404,
+                    "error", "Customer not found"
+            ));
+        }
+
         customerService.deleteCustomer(id);
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity.ok(Map.of(
+                "status", 200,
+                "message", "Customer deleted successfully"
+        ));
     }
 }

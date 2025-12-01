@@ -1,12 +1,14 @@
 package com.customer.service.impl;
 
 import com.customer.dto.CreateCustomerRequest;
+import com.customer.dto.CustomerResponse;
 import com.customer.dto.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.entity.CustomerAuth;
 import com.customer.repository.CustomerAuthRepository;
 import com.customer.repository.CustomerRepository;
 import com.customer.service.CustomerService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,14 +67,30 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findAll(pageable);
     }
 
+    @Transactional
     @Override
     public void deleteCustomer(UUID id) {
+
+        // If customer does not exist → do nothing
+        if (!customerRepository.existsById(id)) {
+            return;
+        }
+        customerAuthRepository.deleteByCustomerId(id);
         customerRepository.deleteById(id);
     }
 
     @Override
-    public Customer getById(UUID id) {
-        return customerRepository.getById(id);
+    public CustomerResponse getById(UUID id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getName(),
+                customer.getEmail(),
+                customer.getPhone(),
+                customer.getAddress()
+        );
     }
 
     @Override
@@ -80,4 +98,10 @@ public class CustomerServiceImpl implements CustomerService {
         Pageable pageable = PageRequest.of(page, size);
         return customerRepository.findByNameContainingIgnoreCase(name, pageable);
     }
+
+    @Override
+    public boolean exists(UUID id) {
+        return customerRepository.existsById(id);
+    }
 }
+

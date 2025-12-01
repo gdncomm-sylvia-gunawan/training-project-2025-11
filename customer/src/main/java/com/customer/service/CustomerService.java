@@ -1,6 +1,7 @@
 package com.customer.service;
 
 import com.customer.dto.CreateCustomerRequest;
+import com.customer.dto.CustomerResponse;
 import com.customer.dto.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,9 @@ public interface CustomerService {
 
     void deleteCustomer(UUID id);
 
-    Customer getById(UUID id);
+    CustomerResponse getById(UUID id);
 
     Page<Customer> getAllCustomersByName(String name, int page, int size);
+
+    public boolean exists(UUID id);
 }

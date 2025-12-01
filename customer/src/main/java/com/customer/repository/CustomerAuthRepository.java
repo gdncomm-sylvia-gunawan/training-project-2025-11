@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface CustomerAuthRepository extends JpaRepository<CustomerAuth, UUID> {
     Optional<CustomerAuth> findByEmailIgnoreCase(String email);
-
+    void deleteByCustomerId(UUID customerId);
 }
