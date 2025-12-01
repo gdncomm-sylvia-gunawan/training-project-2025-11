@@ -1,7 +1,6 @@
 package com.customer.controller;
 
 import com.customer.dto.CreateCustomerRequest;
-import com.customer.dto.LoginRequest;
 import com.customer.dto.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.service.CustomerService;
@@ -79,21 +78,5 @@ public class CustomerController {
     public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // ----------------------------
-    // Login
-    // ----------------------------
-    @PostMapping("/login")
-    public ResponseEntity<String> login(
-            @RequestBody LoginRequest request
-    ) {
-        boolean success = customerService.login(request);
-
-        if (success) {
-            return ResponseEntity.ok("Login success");
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
     }
 }

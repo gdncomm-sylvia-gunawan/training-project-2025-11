@@ -1,7 +1,6 @@
 package com.customer.service.impl;
 
 import com.customer.dto.CreateCustomerRequest;
-import com.customer.dto.LoginRequest;
 import com.customer.dto.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.entity.CustomerAuth;
@@ -58,15 +57,6 @@ public class CustomerServiceImpl implements CustomerService {
         if (request.getPhone() != null) customer.setPhone(request.getPhone());
 
         return customerRepository.save(customer);
-    }
-
-    @Override
-    public boolean login(LoginRequest request) {
-        CustomerAuth auth = customerAuthRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-
-        // Verify password
-        return BCrypt.checkpw(request.getPassword(), auth.getPasswordHash());
     }
 
     @Override

@@ -7,6 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CustomerAuthRepository extends JpaRepository<CustomerAuth, UUID> {
+    Optional<CustomerAuth> findByEmailIgnoreCase(String email);
 
-    Optional<CustomerAuth> findByEmail(String email);
 }
