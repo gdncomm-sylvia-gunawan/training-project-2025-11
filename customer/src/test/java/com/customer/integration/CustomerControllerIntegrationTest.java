@@ -1,8 +1,8 @@
 package com.customer.integration;
 
-import com.customer.dto.CreateCustomerRequest;
-import com.customer.dto.CustomerResponse;
-import com.customer.dto.UpdateCustomerRequest;
+import com.customer.dto.request.CreateCustomerRequest;
+import com.customer.dto.response.CustomerResponse;
+import com.customer.dto.request.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;

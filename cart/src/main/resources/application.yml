@@ -3,16 +3,16 @@ spring:
     name: customer
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/customer_db
+    url: jdbc:postgresql://localhost:5432/cart_db
     username: appuser
     password: apppassword
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
 
 server:
-  port: 8081
+  port: 8082
 
 logging:
   level:
@@ -20,7 +20,7 @@ logging:
 
 springdoc:
   swagger-ui:
-    path: /customer/swagger
+    path: /cart/swagger
     disable-swagger-default-url: true
     use-root-path: false
   api-docs:

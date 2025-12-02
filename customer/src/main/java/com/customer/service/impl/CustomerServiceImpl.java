@@ -1,8 +1,8 @@
 package com.customer.service.impl;
 
-import com.customer.dto.CreateCustomerRequest;
-import com.customer.dto.CustomerResponse;
-import com.customer.dto.UpdateCustomerRequest;
+import com.customer.dto.request.CreateCustomerRequest;
+import com.customer.dto.response.CustomerResponse;
+import com.customer.dto.request.UpdateCustomerRequest;
 import com.customer.entity.Customer;
 import com.customer.entity.CustomerAuth;
 import com.customer.repository.CustomerAuthRepository;
