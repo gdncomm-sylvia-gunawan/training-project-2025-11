@@ -1,60 +1,37 @@
 package com.api.gateway.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import javax.crypto.SecretKey;
+import java.util.Base64;
 
 @Component
 public class JwtUtil {
 
-    private final Key key;
-    private final long expirationMs;
+    private final SecretKey secretKey;
 
-    public JwtUtil(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration-ms}") long expirationMs
-    ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expirationMs = expirationMs;
+    public JwtUtil(@Value("${jwt.secret}") String secret) {
+        this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
     }
 
-    public String generateToken(UUID customerId, String email, Map<String, Object> claims) {
-        Instant now = Instant.now();
+    // CREATE TOKEN
+    public String generateToken(String customerId, String email) {
         return Jwts.builder()
-                .setSubject(customerId.toString())
-                .setIssuer("api-gateway")
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(now.plusMillis(expirationMs)))
-                .addClaims(claims)
+                .setSubject(customerId)
                 .claim("email", email)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(secretKey)
                 .compact();
     }
 
-    public Jws<Claims> parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token);
-    }
-
-    public boolean isValid(String token) {
-        try {
-            parseToken(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public String getSubject(String token) {
-        return parseToken(token).getBody().getSubject();
+    // VALIDATE + PARSE TOKEN
+    public Claims parseToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

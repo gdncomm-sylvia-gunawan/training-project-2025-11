@@ -40,7 +40,7 @@ springdoc:
     enabled: true
 
 jwt:
-  secret: "a389fkdm20fk3md9fkd93kd93kd9fk39"
+  secret: bXktc3VwZXItc2VjcmV0LWtleS0xMjM0NTY3ODkwMTIzNDU2Nzg5MGFiY2Rl
   expiration-ms: 3600000
 
 logging:
