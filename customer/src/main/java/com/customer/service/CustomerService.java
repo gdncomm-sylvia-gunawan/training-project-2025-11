@@ -23,4 +23,6 @@ public interface CustomerService {
     Page<Customer> getAllCustomersByName(String name, int page, int size);
 
     public boolean exists(UUID id);
+
+    CustomerResponse validateLogin(String email, String password);
 }

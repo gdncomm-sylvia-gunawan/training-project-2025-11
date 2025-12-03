@@ -1,15 +1,15 @@
 package com.customer.controller;
 
+import com.customer.dto.request.LoginRequest;
+import com.customer.dto.response.AuthInfoResponse;
+import com.customer.dto.response.CustomerResponse;
+import com.customer.dto.response.LoginResponse;
 import com.customer.entity.CustomerAuth;
 import com.customer.repository.CustomerAuthRepository;
+import com.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/internal/auth")
@@ -17,6 +17,7 @@ import java.util.Map;
 public class InternalAuthController {
 
     private final CustomerAuthRepository customerAuthRepository;
+    private final CustomerService customerService;
 
     @GetMapping("/customer")
     public ResponseEntity<?> findByEmail(@RequestParam String email) {
@@ -28,11 +29,26 @@ public class InternalAuthController {
         }
 
         return ResponseEntity.ok(
-                Map.of(
-                        "customerId", auth.getCustomer().getId(),
-                        "email", auth.getEmail(),
-                        "passwordHash", auth.getPasswordHash(),
-                        "status", "ACTIVE"
+                new AuthInfoResponse(
+                        auth.getCustomer().getId(),
+                        auth.getEmail(),
+                        "ACTIVE"
+                )
+        );
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
+        CustomerResponse customer = customerService.validateLogin(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        return ResponseEntity.ok(
+                new LoginResponse(
+                        customer.getId().toString(),
+                        customer.getEmail()
                 )
         );
     }

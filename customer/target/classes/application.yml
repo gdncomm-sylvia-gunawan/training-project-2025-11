@@ -24,4 +24,4 @@ springdoc:
     disable-swagger-default-url: true
     use-root-path: false
   api-docs:
-    path: /product-docs
+    path: /cart-docs

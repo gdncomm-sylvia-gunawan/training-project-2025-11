@@ -14,9 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,6 +27,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerAuthRepository customerAuthRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Customer createCustomer(CreateCustomerRequest request) {
@@ -102,6 +105,32 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public boolean exists(UUID id) {
         return customerRepository.existsById(id);
+    }
+
+    @Override
+    public CustomerResponse validateLogin(String email, String password) {
+
+        CustomerAuth auth = customerAuthRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        // Validate password
+        if (!passwordEncoder.matches(password, auth.getPasswordHash())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        // Update last login if you want
+        auth.setLastLogin(LocalDateTime.now());
+        customerAuthRepository.save(auth);
+
+        Customer customer = auth.getCustomer();
+
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getName(),
+                customer.getEmail(),
+                customer.getPhone(),
+                customer.getAddress()
+        );
     }
 }
 
