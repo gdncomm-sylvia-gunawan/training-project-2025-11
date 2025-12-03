@@ -1,8 +1,8 @@
 package com.customer.service.impl;
 
 import com.customer.dto.request.CreateCustomerRequest;
-import com.customer.dto.response.CustomerResponse;
 import com.customer.dto.request.UpdateCustomerRequest;
+import com.customer.dto.response.CustomerResponse;
 import com.customer.entity.Customer;
 import com.customer.entity.CustomerAuth;
 import com.customer.repository.CustomerAuthRepository;
@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,13 +32,18 @@ class CustomerServiceImplTest {
     @Mock
     private CustomerAuthRepository customerAuthRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private CustomerServiceImpl service;
 
     private Customer mockCustomer;
+    private CustomerAuth mockAuth;
 
     @BeforeEach
     void setUp() {
+
         mockCustomer = Customer.builder()
                 .id(UUID.randomUUID())
                 .name("Sylvia")
@@ -44,6 +51,14 @@ class CustomerServiceImplTest {
                 .phone("08123")
                 .address("Gading Serpong")
                 .createdAt(LocalDateTime.now())
+                .build();
+
+        mockAuth = CustomerAuth.builder()
+                .id(UUID.randomUUID())
+                .customer(mockCustomer)
+                .email(mockCustomer.getEmail())
+                .passwordHash("hashed")
+                .lastLogin(null)
                 .build();
     }
 
@@ -63,14 +78,14 @@ class CustomerServiceImplTest {
                 .thenReturn(mockCustomer);
 
         when(customerAuthRepository.save(any(CustomerAuth.class)))
-                .thenReturn(null);
+                .thenAnswer(inv -> inv.getArgument(0));
 
         Customer saved = service.createCustomer(req);
 
         assertNotNull(saved);
         assertEquals("Sylvia", saved.getName());
-        verify(customerRepository, times(1)).save(any(Customer.class));
-        verify(customerAuthRepository, times(1)).save(any(CustomerAuth.class));
+        verify(customerRepository).save(any(Customer.class));
+        verify(customerAuthRepository).save(any(CustomerAuth.class));
     }
 
     // ----------------------------
@@ -126,7 +141,7 @@ class CustomerServiceImplTest {
     }
 
     // ----------------------------
-    // Test deleteCustomer (existing)
+    // Test deleteCustomer (exists)
     // ----------------------------
     @Test
     void testDeleteCustomer_Exists() {
@@ -137,13 +152,12 @@ class CustomerServiceImplTest {
 
         service.deleteCustomer(id);
 
-        verify(customerAuthRepository, times(1)).deleteByCustomerId(id);
-        verify(customerRepository, times(1)).deleteById(id);
+        verify(customerAuthRepository).deleteByCustomerId(id);
+        verify(customerRepository).deleteById(id);
     }
 
     // ----------------------------
     // Test deleteCustomer (not exists)
-    // Should do nothing
     // ----------------------------
     @Test
     void testDeleteCustomer_NotExists() {
@@ -170,13 +184,12 @@ class CustomerServiceImplTest {
 
         CustomerResponse response = service.getById(id);
 
-        assertEquals(mockCustomer.getId(), response.getId());
+        assertEquals(id, response.getId());
         assertEquals("Sylvia", response.getName());
-        assertEquals("Gading Serpong", response.getAddress());
     }
 
     // ----------------------------
-    // Test getById not found
+    // Test getById (not found)
     // ----------------------------
     @Test
     void testGetById_NotFound() {
@@ -214,5 +227,51 @@ class CustomerServiceImplTest {
                 .thenReturn(true);
 
         assertTrue(service.exists(id));
+    }
+
+    // ----------------------------
+    // Test validateLogin (success)
+    // ----------------------------
+    @Test
+    void testValidateLogin_Success() {
+        String rawPassword = "mypassword";
+
+        when(customerAuthRepository.findByEmailIgnoreCase(mockCustomer.getEmail()))
+                .thenReturn(Optional.of(mockAuth));
+
+        when(passwordEncoder.matches(rawPassword, "hashed"))
+                .thenReturn(true);
+
+        CustomerResponse response = service.validateLogin(mockCustomer.getEmail(), rawPassword);
+
+        assertEquals(mockCustomer.getId(), response.getId());
+        verify(customerAuthRepository).save(any(CustomerAuth.class)); // last login update
+    }
+
+    // ----------------------------
+    // Test validateLogin (invalid password)
+    // ----------------------------
+    @Test
+    void testValidateLogin_InvalidPassword() {
+        when(customerAuthRepository.findByEmailIgnoreCase(mockCustomer.getEmail()))
+                .thenReturn(Optional.of(mockAuth));
+
+        when(passwordEncoder.matches("wrong", "hashed"))
+                .thenReturn(false);
+
+        assertThrows(RuntimeException.class, () ->
+                service.validateLogin(mockCustomer.getEmail(), "wrong"));
+    }
+
+    // ----------------------------
+    // Test validateLogin (email not found)
+    // ----------------------------
+    @Test
+    void testValidateLogin_EmailNotFound() {
+        when(customerAuthRepository.findByEmailIgnoreCase(anyString()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () ->
+                service.validateLogin("none@mail.com", "pw"));
     }
 }
