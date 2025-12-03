@@ -1,6 +1,10 @@
 server:
   port: 8083
 
+product:
+  service:
+    url: http://localhost:8080/api/products
+
 customer:
   service:
     url: http://localhost:8081
@@ -32,6 +36,10 @@ spring:
             - Path=/api/products/**
           filters:
             - StripPrefix=1
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 springdoc:
   swagger-ui:

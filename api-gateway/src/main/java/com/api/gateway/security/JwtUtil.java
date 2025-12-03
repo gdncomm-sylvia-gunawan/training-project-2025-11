@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
+import java.util.Date;
 
 @Component
 public class JwtUtil {
@@ -23,6 +24,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(customerId)
                 .claim("email", email)
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(secretKey)
                 .compact();
     }
@@ -33,5 +35,10 @@ public class JwtUtil {
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    // GET EXPIRATION DATE
+    public Date getExpiration(String token) {
+        return parseToken(token).getExpiration();
     }
 }
