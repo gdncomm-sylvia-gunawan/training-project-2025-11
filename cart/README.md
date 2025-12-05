@@ -1,1 +1,1 @@
-This is cart service
+this folder contains the cart mvn project

@@ -1,1 +1,1 @@
-This is product service
+this folder contains the product mvn project
