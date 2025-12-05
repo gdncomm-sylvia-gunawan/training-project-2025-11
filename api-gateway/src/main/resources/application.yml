@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8083   # http://localhost:8083/webjars/swagger-ui/index.html#/
 
 product:
   service:
